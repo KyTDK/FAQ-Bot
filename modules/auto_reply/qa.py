@@ -22,7 +22,7 @@ def get_guild_qa(guild_id: int):
         fetch_one=True
     )
     faq_list = []
-    if result[0][0]:
+    if result and result[0] and result[0][0]:
         try:
             faq_list = json.loads(result[0][0])
         except (KeyError, json.JSONDecodeError):

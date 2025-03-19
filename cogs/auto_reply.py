@@ -24,7 +24,7 @@ class AutoReply(commands.Cog):
             (guild_id,),
             fetch_one=True
         )
-        if result[0][0] and len(result) > 0:
+        if result and result[0] and result[0][0] and len(result) > 0:
             try:
                 return json.loads(result[0][0])
             except (KeyError, json.JSONDecodeError):
