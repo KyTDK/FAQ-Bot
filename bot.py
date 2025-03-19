@@ -35,9 +35,12 @@ async def on_ready():
 
 @bot.event
 async def on_message(message: discord.Message):
-        answer = qa.find_best_match(message, threshold=0.7)
-        if answer:
-            await message.reply(answer)
+    if message.author.bot:
+        return
+
+    answer = qa.find_best_match(message, threshold=0.7)
+    if answer:
+        await message.reply(answer)
 
 # --- Run the Bot ---
 if __name__ == "__main__":
