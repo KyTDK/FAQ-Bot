@@ -67,7 +67,7 @@ def initialize_database():
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS faq (
                     guild_id BIGINT PRIMARY KEY,
-                    qa JSON DEFAULT '[]',
+                    qa JSON DEFAULT '[]'
                            )
             """)
             db.commit()
