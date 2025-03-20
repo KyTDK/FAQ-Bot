@@ -5,7 +5,7 @@ import json
 from modules.utils.mysql import execute_query
 
 # Initialize the Sentence Transformer model
-model = SentenceTransformer('all-mpnet-base-v2')
+model = SentenceTransformer('all-MiniLM-L6-v2')
 
 def get_guild_qa(guild_id: int):
     """
