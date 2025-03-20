@@ -22,9 +22,9 @@ def get_guild_qa(guild_id: int):
         fetch_one=True
     )
     faq_list = []
-    if result and result[0] and result[0][0]:
+    if result and result[0]:
         try:
-            faq_list = json.loads(result[0][0])
+            faq_list = json.loads(result[0])
         except (KeyError, json.JSONDecodeError):
             faq_list = []
 
@@ -35,7 +35,9 @@ def get_guild_qa(guild_id: int):
         answer = item.get("answer")
         if question and answer:
             common_questions.append(question)
-            answers[question] = answer
+            # Replace literal '\n' with actual newlines
+            formatted_answer = answer.replace('\\n', '\n')
+            answers[question] = formatted_answer
     return common_questions, answers
 
 def preprocess_message(text: str) -> str:
