@@ -151,9 +151,12 @@ class AutoReply(commands.Cog):
         if current_embed.fields:
             embeds.append(current_embed)
 
-        # Send all embeds sequentially
-        for embed in embeds:
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+        # Send the initial response
+        await interaction.response.send_message(embed=embeds[0], ephemeral=True)
+
+        # Send follow-up messages for any remaining embeds
+        for embed in embeds[1:]:
+            await interaction.followup.send(embed=embed, ephemeral=True)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(AutoReply(bot))
