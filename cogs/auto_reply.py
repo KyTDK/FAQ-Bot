@@ -127,15 +127,33 @@ class AutoReply(commands.Cog):
             await interaction.response.send_message("No QA pairs found.", ephemeral=True)
             return
 
-        embed = Embed(title="QA Pairs", color=Color.blue())
+        embeds = []
+        current_embed = Embed(title="QA Pairs", color=Color.blue())
+        total_char_count = 0
+
         for item in faq_list:
-            # Each field shows the question as the field name and the answer as the field value.
-            embed.add_field(
-                name=f"ID {item.get('id')}: {item.get('question')}",
-                value=item.get('answer'),
-                inline=False
-            )
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+            question = item.get('question', 'No question provided')
+            answer = item.get('answer', 'No answer provided')
+            field_name = f"ID {item.get('id')}: {question}"
+            field_value = answer
+
+            # Check if adding this field would exceed Discord's embed limits
+            if (len(current_embed.fields) >= 25 or
+                total_char_count + len(field_name) + len(field_value) > 6000):
+                embeds.append(current_embed)
+                current_embed = Embed(title="QA Pairs (continued)", color=Color.blue())
+                total_char_count = 0
+
+            current_embed.add_field(name=field_name, value=field_value, inline=False)
+            total_char_count += len(field_name) + len(field_value)
+
+        # Append the last embed if it contains any fields
+        if current_embed.fields:
+            embeds.append(current_embed)
+
+        # Send all embeds sequentially
+        for embed in embeds:
+            await interaction.response.send_message(embed=embed, ephemeral=True)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(AutoReply(bot))
