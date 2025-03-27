@@ -3,7 +3,8 @@ from discord.ext import commands
 from discord import app_commands, Interaction, Embed, Color
 from discord.app_commands.errors import MissingPermissions
 from dotenv import load_dotenv
-import os
+import discord
+import io
 from modules.utils.mysql import execute_query
 
 load_dotenv()
@@ -115,7 +116,7 @@ class AutoReply(commands.Cog):
         description="List all the QA pairs with their IDs"
     )
     @app_commands.checks.has_permissions(moderate_members=True)
-    async def qa_list(self, interaction: Interaction):
+    async def qa_list(self, interaction: discord.Interaction):
         if not interaction.guild:
             await interaction.response.send_message("This command can only be used in a server.", ephemeral=True)
             return
@@ -131,6 +132,7 @@ class AutoReply(commands.Cog):
         current_embed = Embed(title="QA Pairs", color=Color.blue())
         total_char_count = 0
 
+        # Build embed pages as before
         for item in faq_list:
             question = item.get('question', 'No question provided')
             answer = item.get('answer', 'No answer provided')
@@ -151,12 +153,24 @@ class AutoReply(commands.Cog):
         if current_embed.fields:
             embeds.append(current_embed)
 
-        # Send the initial response
-        await interaction.response.send_message(embed=embeds[0], ephemeral=True)
-
-        # Send follow-up messages for any remaining embeds
-        for embed in embeds[1:]:
-            await interaction.followup.send(embed=embed, ephemeral=True)
+        # If the QA list is too long (i.e. more than one embed is needed), send a text file instead
+        if len(embeds) > 1:
+            file_content = ""
+            for item in faq_list:
+                question = item.get('question', 'No question provided')
+                answer = item.get('answer', 'No answer provided')
+                file_content += f"ID {item.get('id')}: {question}\n{answer}\n\n"
+            # Create an in-memory text stream for the file
+            file_buffer = io.StringIO(file_content)
+            file = discord.File(file_buffer, filename="qa_list.txt")
+            await interaction.response.send_message(
+                content="The QA list is too long; please see the attached file.",
+                file=file,
+                ephemeral=True
+            )
+        else:
+            # Otherwise, send a single embed
+            await interaction.response.send_message(embed=embeds[0], ephemeral=True)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(AutoReply(bot))
